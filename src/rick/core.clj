@@ -16,9 +16,7 @@
   (if (and (= user target-user)
            (= reaction reaction-emoji)
            (= (:channel item) target-channel))
-    (do
-      (println "Deleting message" msg)
-      (chat/delete connection (:ts item) target-channel))))
+    (chat/delete connection (:ts item) target-channel)))
 
 
 (defn add-reaction
@@ -31,23 +29,14 @@
 
 (defn on-message-received [{:keys [user channel ts] :as msg}]
   (if (and (= user target-user) (= channel target-channel))
-    (do
-      (println "Adding reaction to" msg)
-      (add-reaction {:channel channel :timestamp ts})
-      (println "Reaction added."))))
-
+    (add-reaction {:channel channel :timestamp ts})))
 
 (defn -main [& args]
-  (println "Initializing rick...")
-
   (let [rtm-conn (rtm/connect token)
         events-publication (:events-publication rtm-conn)]
-
     ;; listen for reaction_removed events
     (rtm/sub-to-event events-publication :reaction_removed on-reaction-removed)
-
     ;; listen for messages added
     (rtm/sub-to-event events-publication :message on-message-received)
-
     ;; block for ever
     (<!! (chan))))
